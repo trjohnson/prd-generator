@@ -52,7 +52,7 @@ export default function Header() {
             marginTop: 2,
             lineHeight: 1,
           }}>
-            BLOODDRAGON.SYS v2.0
+            AI-POWERED · v2.0
           </div>
         </div>
       </div>

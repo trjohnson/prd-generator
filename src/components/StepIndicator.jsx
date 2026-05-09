@@ -22,13 +22,13 @@ export default function StepIndicator({ steps, current }) {
                   ? '1px solid rgba(255, 0, 144, 0.8)'
                   : active
                   ? '1px solid rgba(0, 204, 255, 0.9)'
-                  : '1px solid rgba(0, 204, 255, 0.12)',
+                  : '1px solid rgba(0, 204, 255, 0.25)',
                 background: done
                   ? 'rgba(255, 0, 144, 0.1)'
                   : active
                   ? 'rgba(0, 204, 255, 0.08)'
                   : 'rgba(0, 0, 0, 0.3)',
-                color: done ? '#ff0090' : active ? '#00ccff' : 'rgba(120, 153, 187, 0.3)',
+                color: done ? '#ff0090' : active ? '#00ccff' : 'rgba(120, 153, 187, 0.6)',
                 boxShadow: done
                   ? '0 0 10px rgba(255, 0, 144, 0.5), 0 0 20px rgba(255, 0, 144, 0.2)'
                   : active
@@ -48,15 +48,15 @@ export default function StepIndicator({ steps, current }) {
               </div>
               <span style={{
                 fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 9,
+                fontSize: 11,
                 fontWeight: 400,
-                letterSpacing: '0.1em',
+                letterSpacing: '0.06em',
                 textTransform: 'uppercase',
                 color: active
                   ? '#00ccff'
                   : done
-                  ? 'rgba(255, 0, 144, 0.7)'
-                  : 'rgba(120, 153, 187, 0.3)',
+                  ? 'rgba(255, 0, 144, 0.8)'
+                  : 'rgba(160, 185, 210, 0.75)',
                 textShadow: active ? '0 0 6px rgba(0, 204, 255, 0.7)' : 'none',
                 whiteSpace: 'nowrap',
                 textAlign: 'center',

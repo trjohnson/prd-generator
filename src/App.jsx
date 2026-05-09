@@ -74,7 +74,7 @@ export default function App() {
         fontFamily: "'Share Tech Mono', monospace",
         letterSpacing: '0.12em',
       }}>
-        PRD_GENERATOR.EXE &nbsp;//&nbsp; POWERED BY CLAUDE &nbsp;//&nbsp; BLOODDRAGON.SYS
+        PRD_GENERATOR.EXE &nbsp;//&nbsp; POWERED BY CLAUDE
       </footer>
     </div>
   )

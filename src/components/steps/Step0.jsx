@@ -230,7 +230,7 @@ export default function Step0({ onNext, onExtract }) {
           }}>
             {dragging ? 'RELEASE TO UPLOAD' : 'DRAG FILES HERE OR CLICK TO BROWSE'}
           </p>
-          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: 'rgba(120, 153, 187, 0.35)', letterSpacing: '0.08em' }}>
+          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 13, color: 'rgba(160, 185, 210, 0.75)', letterSpacing: '0.06em' }}>
             .TXT &nbsp;·&nbsp; .PDF &nbsp;·&nbsp; .DOCX &nbsp;·&nbsp; .XLSX &nbsp;·&nbsp; .CSV
             &nbsp;&nbsp;|&nbsp;&nbsp; MAX {MAX_FILE_SIZE_MB}MB &nbsp;·&nbsp; UP TO {MAX_FILES} FILES
           </p>
@@ -402,16 +402,16 @@ export default function Step0({ onNext, onExtract }) {
           style={{
             background: 'none',
             border: 'none',
-            color: 'rgba(120, 153, 187, 0.35)',
+            color: 'rgba(160, 185, 210, 0.7)',
             fontFamily: "'Share Tech Mono', monospace",
-            fontSize: 12,
+            fontSize: 13,
             cursor: 'pointer',
             padding: 0,
             letterSpacing: '0.06em',
             transition: 'color var(--transition)',
           }}
-          onMouseEnter={e => { e.currentTarget.style.color = 'rgba(120, 153, 187, 0.65)' }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(120, 153, 187, 0.35)' }}
+          onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160, 185, 210, 1)' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160, 185, 210, 0.7)' }}
         >
           skip this step →
         </button>
