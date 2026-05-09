@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import StepIndicator from './StepIndicator.jsx'
+import Step0 from './steps/Step0.jsx'
 import Step1 from './steps/Step1.jsx'
 import Step2 from './steps/Step2.jsx'
 import Step3 from './steps/Step3.jsx'
@@ -7,6 +8,7 @@ import Step4 from './steps/Step4.jsx'
 import Step5 from './steps/Step5.jsx'
 
 const STEPS = [
+  'Source Materials',
   'Feature & Problem',
   'Target Users',
   'Goals & Metrics',
@@ -14,22 +16,54 @@ const STEPS = [
   'Review & Generate',
 ]
 
+const EMPTY_AUTO_POPULATED = {
+  problemStatement: false,
+  targetUsers: false,
+  goals: false,
+  successMetrics: false,
+  inScope: false,
+  outOfScope: false,
+}
+
 export default function Wizard({ formData, setFormData, onGenerate, loading, error }) {
   const [step, setStep] = useState(0)
+  const [autoPopulated, setAutoPopulated] = useState(EMPTY_AUTO_POPULATED)
 
   const update = (field, value) => setFormData(prev => ({ ...prev, [field]: value }))
+
+  const clearAutoPopulated = (field) => {
+    if (autoPopulated[field]) {
+      setAutoPopulated(prev => ({ ...prev, [field]: false }))
+    }
+  }
+
+  const handleExtract = (extracted) => {
+    const newAutoPopulated = { ...EMPTY_AUTO_POPULATED }
+    setFormData(prev => {
+      const next = { ...prev }
+      for (const [key, val] of Object.entries(extracted)) {
+        if (val && val.trim()) {
+          next[key] = val
+          newAutoPopulated[key] = true
+        }
+      }
+      return next
+    })
+    setAutoPopulated(newAutoPopulated)
+  }
 
   const next = () => setStep(s => Math.min(s + 1, STEPS.length - 1))
   const back = () => setStep(s => Math.max(s - 1, 0))
 
-  const stepProps = { formData, update, onNext: next, onBack: back }
+  const sharedProps = { formData, update, onNext: next, onBack: back, autoPopulated, clearAutoPopulated }
 
   const stepComponents = [
-    <Step1 key={0} {...stepProps} />,
-    <Step2 key={1} {...stepProps} />,
-    <Step3 key={2} {...stepProps} />,
-    <Step4 key={3} {...stepProps} />,
-    <Step5 key={4} {...stepProps} onGenerate={() => onGenerate(formData)} loading={loading} error={error} />,
+    <Step0 key={0} onNext={next} onExtract={handleExtract} />,
+    <Step1 key={1} {...sharedProps} />,
+    <Step2 key={2} {...sharedProps} />,
+    <Step3 key={3} {...sharedProps} />,
+    <Step4 key={4} {...sharedProps} />,
+    <Step5 key={5} formData={formData} update={update} onNext={next} onBack={back} onGenerate={() => onGenerate(formData)} loading={loading} error={error} />,
   ]
 
   return (

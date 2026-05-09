@@ -1,7 +1,12 @@
 import FormField from '../FormField.jsx'
 import NavButtons from '../NavButtons.jsx'
 
-export default function Step4({ formData, update, onNext, onBack }) {
+export default function Step4({ formData, update, onNext, onBack, autoPopulated, clearAutoPopulated }) {
+  const handleChange = (field, value) => {
+    clearAutoPopulated(field)
+    update(field, value)
+  }
+
   return (
     <div>
       <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Scope</h2>
@@ -14,18 +19,20 @@ export default function Step4({ formData, update, onNext, onBack }) {
           hint="List the features, functionality, and behaviors that will be delivered in this release."
           placeholder="e.g. Daily digest email summarizing all notifications from the past 24 hours; User-configurable digest time; Grouping by project or team..."
           value={formData.inScope}
-          onChange={v => update('inScope', v)}
+          onChange={v => handleChange('inScope', v)}
           multiline
           rows={5}
+          autoPopulated={autoPopulated.inScope}
         />
         <FormField
           label="Out of Scope"
           hint="List what will explicitly NOT be included. Capture deliberate decisions to defer or exclude."
           placeholder="e.g. Real-time notification delivery (not changed); Push notification digest (email only for v1); AI-powered prioritization (future phase)..."
           value={formData.outOfScope}
-          onChange={v => update('outOfScope', v)}
+          onChange={v => handleChange('outOfScope', v)}
           multiline
           rows={5}
+          autoPopulated={autoPopulated.outOfScope}
         />
       </div>
       <NavButtons onBack={onBack} onNext={onNext} nextLabel="Review →" />

@@ -1,7 +1,12 @@
 import FormField from '../FormField.jsx'
 import NavButtons from '../NavButtons.jsx'
 
-export default function Step2({ formData, update, onNext, onBack }) {
+export default function Step2({ formData, update, onNext, onBack, autoPopulated, clearAutoPopulated }) {
+  const handleChange = (field, value) => {
+    clearAutoPopulated(field)
+    update(field, value)
+  }
+
   return (
     <div>
       <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Target Users & Use Cases</h2>
@@ -14,16 +19,17 @@ export default function Step2({ formData, update, onNext, onBack }) {
           hint="Define the primary (and secondary) user personas. Include relevant characteristics, behaviors, or roles."
           placeholder="e.g. Power users who manage multiple projects simultaneously; Mobile-first users who check the app frequently throughout the day..."
           value={formData.targetUsers}
-          onChange={v => update('targetUsers', v)}
+          onChange={v => handleChange('targetUsers', v)}
           multiline
           rows={4}
+          autoPopulated={autoPopulated.targetUsers}
         />
         <FormField
           label="Use Cases"
           hint="List the key scenarios or jobs-to-be-done. What are users trying to accomplish?"
           placeholder="e.g. 1. A manager wants a daily digest of team activity instead of real-time pings. 2. A developer wants to batch low-priority notifications..."
           value={formData.useCases}
-          onChange={v => update('useCases', v)}
+          onChange={v => handleChange('useCases', v)}
           multiline
           rows={5}
         />

@@ -1,8 +1,13 @@
 import FormField from '../FormField.jsx'
 import NavButtons from '../NavButtons.jsx'
 
-export default function Step1({ formData, update, onNext }) {
+export default function Step1({ formData, update, onNext, onBack, autoPopulated, clearAutoPopulated }) {
   const canContinue = formData.featureName.trim() && formData.problemStatement.trim()
+
+  const handleChange = (field, value) => {
+    clearAutoPopulated(field)
+    update(field, value)
+  }
 
   return (
     <div>
@@ -16,7 +21,7 @@ export default function Step1({ formData, update, onNext }) {
           hint="A short, descriptive name for the feature or product."
           placeholder="e.g. Smart Notification Digest"
           value={formData.featureName}
-          onChange={v => update('featureName', v)}
+          onChange={v => handleChange('featureName', v)}
           required
         />
         <FormField
@@ -24,10 +29,11 @@ export default function Step1({ formData, update, onNext }) {
           hint="Describe the pain point or opportunity. Who is affected and why does it matter?"
           placeholder="e.g. Users receive too many notifications and miss critical updates, leading to alert fatigue and disengagement..."
           value={formData.problemStatement}
-          onChange={v => update('problemStatement', v)}
+          onChange={v => handleChange('problemStatement', v)}
           multiline
           rows={5}
           required
+          autoPopulated={autoPopulated.problemStatement}
         />
       </div>
       <NavButtons
