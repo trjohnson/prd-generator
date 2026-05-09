@@ -68,11 +68,13 @@ export default function App() {
       <footer style={{
         textAlign: 'center',
         padding: '20px',
-        color: 'var(--color-text-muted)',
-        fontSize: '13px',
-        borderTop: '1px solid var(--color-border)',
+        color: 'rgba(120, 153, 187, 0.3)',
+        fontSize: '11px',
+        borderTop: '1px solid rgba(0, 204, 255, 0.08)',
+        fontFamily: "'Share Tech Mono', monospace",
+        letterSpacing: '0.12em',
       }}>
-        PRD Generator &mdash; Powered by Claude
+        PRD_GENERATOR.EXE &nbsp;//&nbsp; POWERED BY CLAUDE &nbsp;//&nbsp; BLOODDRAGON.SYS
       </footer>
     </div>
   )

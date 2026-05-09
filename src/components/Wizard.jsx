@@ -68,23 +68,46 @@ export default function Wizard({ formData, setFormData, onGenerate, loading, err
 
   return (
     <div>
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.5px', marginBottom: 6 }}>
+      <div style={{ marginBottom: 36 }}>
+        <h1 style={{
+          fontFamily: "'Orbitron', monospace",
+          fontSize: 22,
+          fontWeight: 800,
+          letterSpacing: '0.12em',
+          marginBottom: 10,
+          color: '#ff0090',
+          textShadow: '0 0 16px rgba(255, 0, 144, 0.7), 0 0 32px rgba(255, 0, 144, 0.3)',
+          textTransform: 'uppercase',
+          animation: 'neon-flicker 10s infinite',
+        }}>
           Generate a PRD
         </h1>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: 15 }}>
-          Answer a few questions and get a professional product requirements document in seconds.
+        <p style={{
+          color: 'rgba(120, 153, 187, 0.6)',
+          fontSize: 12,
+          fontFamily: "'Share Tech Mono', monospace",
+          letterSpacing: '0.06em',
+        }}>
+          // Input data. Let Claude do the rest.
         </p>
       </div>
+
       <StepIndicator steps={STEPS} current={step} />
+
       <div style={{
-        background: 'var(--color-surface)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--color-border)',
+        background: 'rgba(8, 13, 28, 0.92)',
+        border: '1px solid rgba(0, 204, 255, 0.15)',
         padding: '32px',
-        marginTop: 24,
-        boxShadow: 'var(--shadow-sm)',
+        marginTop: 28,
+        boxShadow: '0 0 30px rgba(0, 204, 255, 0.04), inset 0 0 40px rgba(0, 0, 0, 0.5)',
+        position: 'relative',
       }}>
+        {/* corner accents */}
+        <div style={{ position: 'absolute', top: -1, left: -1, width: 12, height: 12, borderTop: '2px solid #00ccff', borderLeft: '2px solid #00ccff' }} />
+        <div style={{ position: 'absolute', top: -1, right: -1, width: 12, height: 12, borderTop: '2px solid #00ccff', borderRight: '2px solid #00ccff' }} />
+        <div style={{ position: 'absolute', bottom: -1, left: -1, width: 12, height: 12, borderBottom: '2px solid #00ccff', borderLeft: '2px solid #00ccff' }} />
+        <div style={{ position: 'absolute', bottom: -1, right: -1, width: 12, height: 12, borderBottom: '2px solid #00ccff', borderRight: '2px solid #00ccff' }} />
+
         {stepComponents[step]}
       </div>
     </div>

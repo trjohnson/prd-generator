@@ -9,9 +9,9 @@ export default function Step3({ formData, update, onNext, onBack, autoPopulated,
 
   return (
     <div>
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Goals & Success Metrics</h2>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: 14, marginBottom: 28 }}>
-        Define what success looks like. Good metrics are specific and measurable.
+      <h2 style={{ fontFamily: "'Orbitron', monospace", fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#00ccff', textShadow: '0 0 10px rgba(0, 204, 255, 0.6)', marginBottom: 8 }}>Goals &amp; Success Metrics</h2>
+      <p style={{ color: 'rgba(120, 153, 187, 0.55)', fontSize: 12, fontFamily: "'Share Tech Mono', monospace", marginBottom: 28, letterSpacing: '0.04em' }}>
+        // Specify measurable outcomes and targets.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <FormField

@@ -9,9 +9,9 @@ export default function Step4({ formData, update, onNext, onBack, autoPopulated,
 
   return (
     <div>
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Scope</h2>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: 14, marginBottom: 28 }}>
-        Clearly define boundaries. Being explicit about what is NOT included is just as important as what is.
+      <h2 style={{ fontFamily: "'Orbitron', monospace", fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#00ccff', textShadow: '0 0 10px rgba(0, 204, 255, 0.6)', marginBottom: 8 }}>Scope</h2>
+      <p style={{ color: 'rgba(120, 153, 187, 0.55)', fontSize: 12, fontFamily: "'Share Tech Mono', monospace", marginBottom: 28, letterSpacing: '0.04em' }}>
+        // Define boundaries. What's in. What's out. No ambiguity.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <FormField

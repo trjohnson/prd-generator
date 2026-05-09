@@ -5,49 +5,13 @@ const MAX_FILE_SIZE_MB = 3
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024
 const MAX_FILES = 5
 
-const FILE_ICONS = {
-  pdf: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <rect x="3" y="1" width="11" height="16" rx="1.5" fill="#fee2e2" stroke="#ef4444" strokeWidth="1.2"/>
-      <path d="M3 5h11" stroke="#ef4444" strokeWidth="1.2"/>
-      <path d="M7 1v4" stroke="#ef4444" strokeWidth="1.2"/>
-      <path d="M6 9h8M6 12h5" stroke="#ef4444" strokeWidth="1" strokeLinecap="round"/>
-      <text x="5" y="15" fontSize="4" fontWeight="700" fill="#ef4444" fontFamily="sans-serif">PDF</text>
-    </svg>
-  ),
-  docx: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <rect x="3" y="1" width="11" height="16" rx="1.5" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1.2"/>
-      <path d="M6 8h8M6 11h8M6 14h5" stroke="#3b82f6" strokeWidth="1" strokeLinecap="round"/>
-    </svg>
-  ),
-  xlsx: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <rect x="3" y="1" width="11" height="16" rx="1.5" fill="#d1fae5" stroke="#10b981" strokeWidth="1.2"/>
-      <path d="M3 7h11M3 11h11M7 7v10" stroke="#10b981" strokeWidth="1"/>
-    </svg>
-  ),
-  txt: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <rect x="3" y="1" width="11" height="16" rx="1.5" fill="#f3f4f6" stroke="#6b7280" strokeWidth="1.2"/>
-      <path d="M6 7h8M6 10h8M6 13h5" stroke="#6b7280" strokeWidth="1" strokeLinecap="round"/>
-    </svg>
-  ),
-  csv: (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <rect x="3" y="1" width="11" height="16" rx="1.5" fill="#d1fae5" stroke="#10b981" strokeWidth="1.2"/>
-      <path d="M6 7h8M6 10h8M6 13h5" stroke="#10b981" strokeWidth="1" strokeLinecap="round"/>
-    </svg>
-  ),
-}
-
 const FIELD_LABELS = {
-  problemStatement: 'Problem Statement',
-  targetUsers: 'Target Users',
-  goals: 'Goals',
-  successMetrics: 'Success Metrics',
-  inScope: 'In Scope',
-  outOfScope: 'Out of Scope',
+  problemStatement: 'PROBLEM STATEMENT',
+  targetUsers: 'TARGET USERS',
+  goals: 'GOALS',
+  successMetrics: 'SUCCESS METRICS',
+  inScope: 'IN SCOPE',
+  outOfScope: 'OUT OF SCOPE',
 }
 
 function fileExt(name) {
@@ -56,8 +20,15 @@ function fileExt(name) {
 
 function formatBytes(bytes) {
   return bytes < 1024 * 1024
-    ? `${(bytes / 1024).toFixed(0)} KB`
-    : `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    ? `${(bytes / 1024).toFixed(0)}KB`
+    : `${(bytes / (1024 * 1024)).toFixed(1)}MB`
+}
+
+function fileTypeColor(ext) {
+  if (ext === 'pdf') return '#ff4466'
+  if (ext === 'docx') return '#00ccff'
+  if (ext === 'xlsx' || ext === 'csv') return '#00ff99'
+  return '#7899bb'
 }
 
 async function extractFileContent(file) {
@@ -94,7 +65,6 @@ async function extractFileContent(file) {
     return { type: 'text', content: text }
   }
 
-  // txt, csv
   const text = await file.text()
   return { type: 'text', content: text }
 }
@@ -114,9 +84,9 @@ export default function Step0({ onNext, onExtract }) {
     Array.from(incoming).forEach(f => {
       const ext = '.' + fileExt(f.name)
       if (!ACCEPTED_EXTENSIONS.includes(ext)) {
-        rejected.push(`${f.name}: unsupported file type`)
+        rejected.push(`${f.name} — unsupported type`)
       } else if (f.size > MAX_FILE_SIZE) {
-        rejected.push(`${f.name}: exceeds ${MAX_FILE_SIZE_MB} MB limit`)
+        rejected.push(`${f.name} — exceeds ${MAX_FILE_SIZE_MB}MB limit`)
       } else {
         accepted.push(f)
       }
@@ -124,9 +94,7 @@ export default function Step0({ onNext, onExtract }) {
     setFileErrors(rejected)
     setFiles(prev => {
       const existingNames = new Set(prev.map(f => f.name))
-      const fresh = accepted.filter(f => !existingNames.has(f.name))
-      const next = [...prev, ...fresh].slice(0, MAX_FILES)
-      return next
+      return [...prev, ...accepted.filter(f => !existingNames.has(f.name))].slice(0, MAX_FILES)
     })
   }, [])
 
@@ -188,9 +156,20 @@ export default function Step0({ onNext, onExtract }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Upload Source Materials</h2>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: 14, marginBottom: 24 }}>
-        Optionally upload existing documents and Claude will extract relevant information to pre-populate your PRD fields. You can edit everything before generating.
+      <h2 style={{
+        fontFamily: "'Orbitron', monospace",
+        fontSize: 13,
+        fontWeight: 700,
+        letterSpacing: '0.14em',
+        textTransform: 'uppercase',
+        color: '#00ccff',
+        textShadow: '0 0 10px rgba(0, 204, 255, 0.6)',
+        marginBottom: 8,
+      }}>
+        Upload Source Materials
+      </h2>
+      <p style={{ color: 'rgba(120, 153, 187, 0.55)', fontSize: 12, fontFamily: "'Share Tech Mono', monospace", marginBottom: 28, letterSpacing: '0.04em' }}>
+        // Upload existing docs. Claude will extract and pre-populate your PRD fields. Optional.
       </p>
 
       {/* Drop zone */}
@@ -201,15 +180,32 @@ export default function Step0({ onNext, onExtract }) {
           onDragLeave={handleDragLeave}
           onClick={() => !analyzing && inputRef.current?.click()}
           style={{
-            border: `2px dashed ${dragging ? 'var(--color-accent)' : 'var(--color-border)'}`,
-            borderRadius: 'var(--radius-md)',
-            padding: '32px 24px',
+            border: `1px dashed ${dragging ? '#00ccff' : 'rgba(0, 204, 255, 0.25)'}`,
+            padding: '36px 24px',
             textAlign: 'center',
             cursor: analyzing ? 'default' : 'pointer',
-            background: dragging ? 'var(--color-accent-light)' : 'var(--color-surface-hover)',
+            background: dragging ? 'rgba(0, 204, 255, 0.04)' : 'rgba(0, 0, 0, 0.3)',
             transition: 'all var(--transition)',
+            boxShadow: dragging ? '0 0 20px rgba(0, 204, 255, 0.1), inset 0 0 20px rgba(0, 204, 255, 0.03)' : 'none',
+            position: 'relative',
           }}
         >
+          {/* Drop zone corner accents */}
+          {['tl', 'tr', 'bl', 'br'].map(pos => (
+            <div key={pos} style={{
+              position: 'absolute',
+              width: 10, height: 10,
+              top: pos.startsWith('t') ? 0 : 'auto',
+              bottom: pos.startsWith('b') ? 0 : 'auto',
+              left: pos.endsWith('l') ? 0 : 'auto',
+              right: pos.endsWith('r') ? 0 : 'auto',
+              borderTop: pos.startsWith('t') ? `1px solid ${dragging ? '#00ccff' : 'rgba(0, 204, 255, 0.4)'}` : 'none',
+              borderBottom: pos.startsWith('b') ? `1px solid ${dragging ? '#00ccff' : 'rgba(0, 204, 255, 0.4)'}` : 'none',
+              borderLeft: pos.endsWith('l') ? `1px solid ${dragging ? '#00ccff' : 'rgba(0, 204, 255, 0.4)'}` : 'none',
+              borderRight: pos.endsWith('r') ? `1px solid ${dragging ? '#00ccff' : 'rgba(0, 204, 255, 0.4)'}` : 'none',
+            }} />
+          ))}
+
           <input
             ref={inputRef}
             type="file"
@@ -218,61 +214,87 @@ export default function Step0({ onNext, onExtract }) {
             style={{ display: 'none' }}
             onChange={e => addFiles(e.target.files)}
           />
-          <div style={{ marginBottom: 10 }}>
-            <UploadIcon />
-          </div>
-          <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--color-text-primary)', marginBottom: 4 }}>
-            Drag files here or click to browse
+
+          <UploadIcon dragging={dragging} />
+
+          <p style={{
+            fontFamily: "'Orbitron', monospace",
+            fontWeight: 600,
+            fontSize: 12,
+            letterSpacing: '0.1em',
+            color: dragging ? '#00ccff' : 'rgba(120, 153, 187, 0.7)',
+            textShadow: dragging ? '0 0 8px rgba(0, 204, 255, 0.6)' : 'none',
+            marginTop: 14,
+            marginBottom: 8,
+            transition: 'all var(--transition)',
+          }}>
+            {dragging ? 'RELEASE TO UPLOAD' : 'DRAG FILES HERE OR CLICK TO BROWSE'}
           </p>
-          <p style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
-            .txt &nbsp;·&nbsp; .pdf &nbsp;·&nbsp; .docx &nbsp;·&nbsp; .xlsx &nbsp;·&nbsp; .csv &nbsp;&nbsp;
-            (max {MAX_FILE_SIZE_MB} MB each, up to {MAX_FILES} files)
+          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: 'rgba(120, 153, 187, 0.35)', letterSpacing: '0.08em' }}>
+            .TXT &nbsp;·&nbsp; .PDF &nbsp;·&nbsp; .DOCX &nbsp;·&nbsp; .XLSX &nbsp;·&nbsp; .CSV
+            &nbsp;&nbsp;|&nbsp;&nbsp; MAX {MAX_FILE_SIZE_MB}MB &nbsp;·&nbsp; UP TO {MAX_FILES} FILES
           </p>
         </div>
       )}
 
       {/* File errors */}
       {fileErrors.length > 0 && (
-        <div style={{ marginTop: 12, fontSize: 13, color: 'var(--color-danger)' }}>
-          {fileErrors.map((e, i) => <div key={i}>{e}</div>)}
+        <div style={{ marginTop: 10, fontFamily: "'Share Tech Mono', monospace", fontSize: 12, color: '#ff4466', textShadow: '0 0 6px rgba(255, 68, 102, 0.4)' }}>
+          {fileErrors.map((e, i) => <div key={i}>⚠ {e}</div>)}
         </div>
       )}
 
       {/* File list */}
       {files.length > 0 && (
-        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
           {files.map(f => {
             const ext = fileExt(f.name)
+            const color = fileTypeColor(ext)
             return (
               <div key={f.name} style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 10,
-                padding: '10px 12px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--color-border)',
-                background: 'var(--color-surface)',
+                gap: 12,
+                padding: '10px 14px',
+                border: `1px solid ${color}33`,
+                background: `${color}08`,
+                boxShadow: `0 0 8px ${color}0a`,
               }}>
-                {FILE_ICONS[ext] || FILE_ICONS.txt}
+                <span style={{
+                  fontFamily: "'Orbitron', monospace",
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  color,
+                  textShadow: `0 0 6px ${color}`,
+                  minWidth: 36,
+                }}>
+                  {ext.toUpperCase()}
+                </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--color-text-primary)' }}>
                     {f.name}
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{formatBytes(f.size)}</div>
+                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: 'rgba(120, 153, 187, 0.4)', marginTop: 2 }}>
+                    {formatBytes(f.size)}
+                  </div>
                 </div>
                 {!analyzing && !analysisComplete && (
                   <button
                     onClick={() => removeFile(f.name)}
                     style={{
                       background: 'none',
-                      border: 'none',
-                      color: 'var(--color-text-muted)',
+                      border: '1px solid rgba(255, 68, 102, 0.3)',
+                      color: 'rgba(255, 68, 102, 0.5)',
                       cursor: 'pointer',
-                      padding: 4,
-                      borderRadius: 4,
+                      padding: '2px 7px',
+                      fontFamily: 'monospace',
+                      fontSize: 14,
                       lineHeight: 1,
-                      fontSize: 18,
+                      transition: 'all var(--transition)',
                     }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#ff4466'; e.currentTarget.style.color = '#ff4466'; e.currentTarget.style.boxShadow = '0 0 6px rgba(255, 68, 102, 0.3)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255, 68, 102, 0.3)'; e.currentTarget.style.color = 'rgba(255, 68, 102, 0.5)'; e.currentTarget.style.boxShadow = 'none' }}
                     title="Remove"
                   >
                     ×
@@ -284,7 +306,7 @@ export default function Step0({ onNext, onExtract }) {
         </div>
       )}
 
-      {/* Analysis loading */}
+      {/* Analyzing state */}
       {analyzing && (
         <div style={{
           marginTop: 20,
@@ -292,15 +314,17 @@ export default function Step0({ onNext, onExtract }) {
           alignItems: 'center',
           gap: 12,
           padding: '14px 16px',
-          borderRadius: 'var(--radius-sm)',
-          background: 'var(--color-accent-light)',
-          border: '1px solid #c7d2fd',
-          color: 'var(--color-accent)',
-          fontSize: 14,
-          fontWeight: 500,
+          border: '1px solid rgba(0, 204, 255, 0.3)',
+          background: 'rgba(0, 204, 255, 0.04)',
+          color: '#00ccff',
+          fontFamily: "'Orbitron', monospace",
+          fontSize: 11,
+          letterSpacing: '0.12em',
+          textShadow: '0 0 8px rgba(0, 204, 255, 0.5)',
+          boxShadow: '0 0 12px rgba(0, 204, 255, 0.08)',
         }}>
           <Spinner />
-          Extracting information with Claude...
+          EXTRACTING DATA WITH CLAUDE...
         </div>
       )}
 
@@ -309,13 +333,14 @@ export default function Step0({ onNext, onExtract }) {
         <div style={{
           marginTop: 16,
           padding: '12px 14px',
-          borderRadius: 'var(--radius-sm)',
-          background: 'var(--color-danger-light)',
-          border: '1px solid #fca5a5',
-          color: 'var(--color-danger)',
-          fontSize: 14,
+          border: '1px solid rgba(255, 68, 102, 0.4)',
+          background: 'rgba(255, 68, 102, 0.07)',
+          color: '#ff4466',
+          fontFamily: "'Share Tech Mono', monospace",
+          fontSize: 13,
+          textShadow: '0 0 6px rgba(255, 68, 102, 0.3)',
         }}>
-          {error}
+          ⚠ {error}
         </div>
       )}
 
@@ -323,29 +348,38 @@ export default function Step0({ onNext, onExtract }) {
       {analysisComplete && (
         <div style={{
           marginTop: 20,
-          padding: '16px',
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--color-success-light)',
-          border: '1px solid #6ee7b7',
+          padding: '18px',
+          border: '1px solid rgba(0, 204, 255, 0.3)',
+          background: 'rgba(0, 204, 255, 0.03)',
+          boxShadow: '0 0 16px rgba(0, 204, 255, 0.06)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
             <CheckIcon />
-            <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--color-success)' }}>
-              Extraction complete
+            <span style={{
+              fontFamily: "'Orbitron', monospace",
+              fontWeight: 700,
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              color: '#00ccff',
+              textShadow: '0 0 8px rgba(0, 204, 255, 0.6)',
+            }}>
+              EXTRACTION COMPLETE
             </span>
           </div>
-          <p style={{ fontSize: 13, color: '#065f46', marginBottom: 10 }}>
-            The following fields have been pre-populated from your documents. You can review and edit them in the next steps.
+          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 12, color: 'rgba(120, 153, 187, 0.6)', marginBottom: 12, letterSpacing: '0.04em' }}>
+            // Fields pre-populated from your documents. Review and edit in the next steps.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {extractedFields.map(k => (
               <span key={k} style={{
                 padding: '3px 10px',
-                borderRadius: 20,
-                background: '#d1fae5',
-                color: '#065f46',
-                fontSize: 12,
-                fontWeight: 600,
+                border: '1px solid rgba(255, 0, 144, 0.4)',
+                background: 'rgba(255, 0, 144, 0.07)',
+                color: '#ff0090',
+                fontFamily: "'Orbitron', monospace",
+                fontSize: 9,
+                letterSpacing: '0.1em',
+                textShadow: '0 0 6px rgba(255, 0, 144, 0.5)',
               }}>
                 {FIELD_LABELS[k] || k}
               </span>
@@ -359,24 +393,27 @@ export default function Step0({ onNext, onExtract }) {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 32,
+        marginTop: 36,
         paddingTop: 24,
-        borderTop: '1px solid var(--color-border)',
+        borderTop: '1px solid rgba(0, 204, 255, 0.1)',
       }}>
         <button
           onClick={onNext}
           style={{
             background: 'none',
             border: 'none',
-            color: 'var(--color-text-muted)',
-            fontSize: 14,
+            color: 'rgba(120, 153, 187, 0.35)',
+            fontFamily: "'Share Tech Mono', monospace",
+            fontSize: 12,
             cursor: 'pointer',
             padding: 0,
-            textDecoration: 'underline',
-            textUnderlineOffset: 3,
+            letterSpacing: '0.06em',
+            transition: 'color var(--transition)',
           }}
+          onMouseEnter={e => { e.currentTarget.style.color = 'rgba(120, 153, 187, 0.65)' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(120, 153, 187, 0.35)' }}
         >
-          Skip this step
+          skip this step →
         </button>
 
         {!analysisComplete ? (
@@ -384,38 +421,53 @@ export default function Step0({ onNext, onExtract }) {
             onClick={handleAnalyze}
             disabled={files.length === 0 || analyzing}
             style={{
-              padding: '10px 24px',
-              borderRadius: 'var(--radius-sm)',
-              border: 'none',
-              background: files.length === 0 || analyzing ? 'var(--color-border)' : 'var(--color-accent)',
-              color: files.length === 0 || analyzing ? 'var(--color-text-muted)' : '#fff',
-              fontSize: 14,
-              fontWeight: 600,
+              padding: '10px 26px',
+              border: files.length === 0 || analyzing ? '1px solid rgba(0, 204, 255, 0.1)' : '1px solid rgba(0, 204, 255, 0.6)',
+              background: 'transparent',
+              color: files.length === 0 || analyzing ? 'rgba(120, 153, 187, 0.25)' : '#00ccff',
+              fontFamily: "'Orbitron', monospace",
+              fontSize: 11,
+              letterSpacing: '0.14em',
               cursor: files.length === 0 || analyzing ? 'not-allowed' : 'pointer',
-              transition: 'background var(--transition)',
+              textShadow: files.length === 0 || analyzing ? 'none' : '0 0 8px rgba(0, 204, 255, 0.6)',
+              boxShadow: files.length === 0 || analyzing ? 'none' : '0 0 12px rgba(0, 204, 255, 0.25), inset 0 0 10px rgba(0, 204, 255, 0.03)',
+              transition: 'all var(--transition)',
             }}
-            onMouseEnter={e => { if (files.length > 0 && !analyzing) e.currentTarget.style.background = 'var(--color-accent-hover)' }}
-            onMouseLeave={e => { if (files.length > 0 && !analyzing) e.currentTarget.style.background = 'var(--color-accent)' }}
+            onMouseEnter={e => {
+              if (files.length > 0 && !analyzing) {
+                e.currentTarget.style.background = 'rgba(0, 204, 255, 0.07)'
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 204, 255, 0.4), inset 0 0 15px rgba(0, 204, 255, 0.05)'
+              }
+            }}
+            onMouseLeave={e => {
+              if (files.length > 0 && !analyzing) {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.boxShadow = '0 0 12px rgba(0, 204, 255, 0.25), inset 0 0 10px rgba(0, 204, 255, 0.03)'
+              }
+            }}
           >
-            Analyze with Claude ✦
+            ✦ ANALYZE WITH CLAUDE
           </button>
         ) : (
           <button
             onClick={onNext}
             style={{
-              padding: '10px 24px',
-              borderRadius: 'var(--radius-sm)',
-              border: 'none',
-              background: 'var(--color-accent)',
-              color: '#fff',
-              fontSize: 14,
-              fontWeight: 600,
+              padding: '10px 26px',
+              border: '1px solid rgba(255, 0, 144, 0.7)',
+              background: 'transparent',
+              color: '#ff0090',
+              fontFamily: "'Orbitron', monospace",
+              fontSize: 11,
+              letterSpacing: '0.14em',
               cursor: 'pointer',
+              textShadow: '0 0 8px rgba(255, 0, 144, 0.6)',
+              boxShadow: '0 0 12px rgba(255, 0, 144, 0.25), inset 0 0 10px rgba(255, 0, 144, 0.03)',
+              transition: 'all var(--transition)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-accent-hover)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-accent)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 0, 144, 0.1)'; e.currentTarget.style.boxShadow = '0 0 22px rgba(255, 0, 144, 0.5), inset 0 0 15px rgba(255, 0, 144, 0.06)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.boxShadow = '0 0 12px rgba(255, 0, 144, 0.25), inset 0 0 10px rgba(255, 0, 144, 0.03)' }}
           >
-            Continue →
+            CONTINUE →
           </button>
         )}
       </div>
@@ -423,31 +475,33 @@ export default function Step0({ onNext, onExtract }) {
   )
 }
 
-function UploadIcon() {
+function UploadIcon({ dragging }) {
+  const color = dragging ? '#00ccff' : 'rgba(0, 204, 255, 0.35)'
   return (
-    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{ margin: '0 auto', display: 'block' }}>
-      <circle cx="18" cy="18" r="18" fill="var(--color-accent-light)"/>
-      <path d="M18 24V14M14 18l4-4 4 4" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M12 26h12" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round"/>
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style={{ margin: '0 auto', display: 'block' }}>
+      <rect x="1" y="1" width="38" height="38" stroke={color} strokeWidth="1" opacity="0.6"/>
+      <path d="M20 28V14M14 20l6-6 6 6" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 32h16" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+      <rect x="3" y="3" width="6" height="6" fill={color} opacity="0.15"/>
+      <rect x="31" y="3" width="6" height="6" fill={color} opacity="0.15"/>
     </svg>
   )
 }
 
 function CheckIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <circle cx="9" cy="9" r="9" fill="var(--color-success)"/>
-      <path d="M5.5 9L8 11.5L12.5 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="0.5" y="0.5" width="15" height="15" stroke="#00ccff" strokeOpacity="0.6"/>
+      <path d="M4 8L7 11L12 5" stroke="#00ccff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
 
 function Spinner() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" style={{ animation: 'spin 0.8s linear infinite', flexShrink: 0 }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <circle cx="8" cy="8" r="6" stroke="currentColor" strokeOpacity="0.25" strokeWidth="2.5" fill="none"/>
-      <path d="M8 2 A6 6 0 0 1 14 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+    <svg width="14" height="14" viewBox="0 0 14 14" style={{ animation: 'spin 0.8s linear infinite', flexShrink: 0 }}>
+      <circle cx="7" cy="7" r="5" stroke="rgba(0,204,255,0.2)" strokeWidth="2" fill="none"/>
+      <path d="M7 2 A5 5 0 0 1 12 7" stroke="#00ccff" strokeWidth="2" strokeLinecap="round" fill="none"/>
     </svg>
   )
 }

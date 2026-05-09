@@ -9,9 +9,9 @@ export default function Step2({ formData, update, onNext, onBack, autoPopulated,
 
   return (
     <div>
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Target Users & Use Cases</h2>
-      <p style={{ color: 'var(--color-text-secondary)', fontSize: 14, marginBottom: 28 }}>
-        Describe who will use this feature and the specific scenarios where it provides value.
+      <h2 style={{ fontFamily: "'Orbitron', monospace", fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#00ccff', textShadow: '0 0 10px rgba(0, 204, 255, 0.6)', marginBottom: 8 }}>Target Users &amp; Use Cases</h2>
+      <p style={{ color: 'rgba(120, 153, 187, 0.55)', fontSize: 12, fontFamily: "'Share Tech Mono', monospace", marginBottom: 28, letterSpacing: '0.04em' }}>
+        // Define who this is for and the scenarios where it delivers value.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <FormField

@@ -5,40 +5,75 @@
 }
 
 :root {
-  --color-bg: #f8f9fc;
-  --color-surface: #ffffff;
-  --color-surface-hover: #f1f3f8;
-  --color-border: #e2e6ef;
-  --color-border-focus: #4f6ef7;
-  --color-text-primary: #111827;
-  --color-text-secondary: #6b7280;
-  --color-text-muted: #9ca3af;
-  --color-accent: #4f6ef7;
-  --color-accent-hover: #3d5ce5;
-  --color-accent-light: #eef1fe;
-  --color-success: #10b981;
-  --color-success-light: #ecfdf5;
-  --color-danger: #ef4444;
-  --color-danger-light: #fef2f2;
-  --color-warning: #f59e0b;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
-  --transition: 180ms ease;
+  --color-bg: #04060f;
+  --color-surface: #080d1c;
+  --color-surface-hover: #0b1022;
+  --color-border: rgba(0, 204, 255, 0.15);
+  --color-border-focus: #00ccff;
+
+  --color-neon-pink: #ff0090;
+  --color-neon-cyan: #00ccff;
+  --color-neon-blue: #0055ff;
+  --color-neon-pink-dim: rgba(255, 0, 144, 0.6);
+  --color-neon-cyan-dim: rgba(0, 204, 255, 0.6);
+
+  --color-text-primary: #ccd6f6;
+  --color-text-secondary: #7899bb;
+  --color-text-muted: rgba(120, 153, 187, 0.45);
+
+  /* keep semantic names for components that use them */
+  --color-accent: #ff0090;
+  --color-accent-hover: #cc0073;
+  --color-accent-light: rgba(255, 0, 144, 0.08);
+  --color-success: #00ccff;
+  --color-success-light: rgba(0, 204, 255, 0.08);
+  --color-danger: #ff4466;
+  --color-danger-light: rgba(255, 68, 102, 0.1);
+
+  --glow-pink: 0 0 8px var(--color-neon-pink), 0 0 20px rgba(255, 0, 144, 0.4), 0 0 40px rgba(255, 0, 144, 0.15);
+  --glow-cyan: 0 0 8px var(--color-neon-cyan), 0 0 20px rgba(0, 204, 255, 0.4), 0 0 40px rgba(0, 204, 255, 0.15);
+  --glow-pink-text: 0 0 8px var(--color-neon-pink), 0 0 16px rgba(255, 0, 144, 0.5);
+  --glow-cyan-text: 0 0 8px var(--color-neon-cyan), 0 0 16px rgba(0, 204, 255, 0.5);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --shadow-sm: 0 0 20px rgba(0, 204, 255, 0.04), inset 0 0 30px rgba(0, 0, 0, 0.4);
+  --transition: 160ms ease;
+
+  --font-display: 'Orbitron', 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', 'Consolas', monospace;
+  --font-sans: 'Share Tech Mono', monospace;
 }
 
 html {
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.5;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--color-text-primary);
-  background: var(--color-bg);
+  background-color: var(--color-bg);
+  /* retro grid */
+  background-image:
+    linear-gradient(rgba(0, 204, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 204, 255, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
   -webkit-font-smoothing: antialiased;
+}
+
+/* scanline overlay */
+html::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.07) 3px,
+    rgba(0, 0, 0, 0.07) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
 }
 
 body {
@@ -52,16 +87,21 @@ body {
 }
 
 button {
-  font-family: inherit;
+  font-family: var(--font-display);
   cursor: pointer;
   border: none;
   outline: none;
+  letter-spacing: 0.05em;
 }
 
 input, textarea {
-  font-family: inherit;
-  font-size: inherit;
+  font-family: var(--font-mono);
+  font-size: 14px;
   color: var(--color-text-primary);
+}
+
+input::placeholder, textarea::placeholder {
+  color: rgba(120, 153, 187, 0.3);
 }
 
 textarea {
@@ -69,6 +109,32 @@ textarea {
 }
 
 a {
-  color: var(--color-accent);
-  text-decoration: none;
+  color: var(--color-neon-cyan);
+}
+
+::selection {
+  background: rgba(255, 0, 144, 0.3);
+  color: #fff;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: rgba(0, 204, 255, 0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 204, 255, 0.45); }
+
+@keyframes neon-flicker {
+  0%, 95%, 100% { opacity: 1; }
+  96% { opacity: 0.85; }
+  97% { opacity: 1; }
+  98% { opacity: 0.9; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-cyan {
+  0%, 100% { box-shadow: var(--glow-cyan); }
+  50% { box-shadow: 0 0 4px var(--color-neon-cyan), 0 0 10px rgba(0, 204, 255, 0.2); }
 }
