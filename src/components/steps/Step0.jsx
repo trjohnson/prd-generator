@@ -158,16 +158,20 @@ export default function Step0({ onNext, onExtract }) {
 
       clearTimeout(timeoutId)
 
-      const json = await res.json()
+      // Vercel may return an HTML error page (e.g. on 504 timeout kill),
+      // so parse JSON safely rather than letting res.json() throw and
+      // swallow the actual status code.
+      let json = null
+      try { json = await res.json() } catch (_) { /* non-JSON body */ }
 
       if (res.status === 413) {
-        throw new Error(json.error || 'Files are too large. Try uploading fewer or smaller documents.')
+        throw new Error(json?.error || 'Files are too large. Try uploading fewer or smaller documents.')
       }
-      if (res.status === 504) {
-        throw new Error(json.error || 'Analysis timed out. Try with fewer or smaller files.')
+      if (res.status === 504 || (!json && !res.ok)) {
+        throw new Error(json?.error || 'Analysis timed out. The server did not respond in time — try with fewer or smaller files.')
       }
       if (!res.ok) {
-        throw new Error(json.error || 'Extraction failed. Please try again.')
+        throw new Error(json?.error || 'Extraction failed. Please try again.')
       }
 
       const populated = Object.entries(json.extracted)

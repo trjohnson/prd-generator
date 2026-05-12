@@ -106,8 +106,17 @@ Return ONLY a valid JSON object with exactly these six keys. No markdown, no exp
   } catch (err) {
     console.error("Extraction error:", err.constructor?.name, err.message);
 
+    const name = err.constructor?.name ?? "";
+
+    if (name === "AuthenticationError" || err.status === 401) {
+      return res.status(500).json({
+        error: "Invalid or missing Anthropic API key. Check that ANTHROPIC_API_KEY is set in your Vercel environment variables.",
+        errorCode: "AUTH_ERROR",
+      });
+    }
+
     const isTimeout =
-      err.constructor?.name === "APIConnectionTimeoutError" ||
+      name === "APIConnectionTimeoutError" ||
       err.code === "ETIMEDOUT" ||
       err.message?.toLowerCase().includes("timeout");
 
@@ -126,7 +135,7 @@ Return ONLY a valid JSON object with exactly these six keys. No markdown, no exp
     }
 
     return res.status(500).json({
-      error: "Failed to extract information from your documents. Please try again.",
+      error: `Failed to extract information from your documents. Please try again. (${name || "UnknownError"})`,
       errorCode: "API_ERROR",
     });
   }
