@@ -1,5 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 
+// Raises the limit on Pro/Enterprise plans; Hobby is hard-capped at 10s by Vercel regardless.
+export const maxDuration = 60;
+
+const MAX_CHARS_PER_DOC = 24_000; // ~6k words per document
+const MAX_TOTAL_CHARS = 72_000;   // ~18k words across all documents
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -7,7 +13,30 @@ export default async function handler(req, res) {
 
   const { documents } = req.body;
   if (!documents || documents.length === 0) {
-    return res.status(400).json({ error: "No documents provided" });
+    return res.status(400).json({ error: "No documents provided", errorCode: "NO_DOCUMENTS" });
+  }
+
+  // Truncate oversized text documents and reject if the total is still too large.
+  let totalChars = 0;
+  const processedDocs = documents.map((doc) => {
+    if (doc.type === "text") {
+      const truncated =
+        doc.content.length > MAX_CHARS_PER_DOC
+          ? doc.content.slice(0, MAX_CHARS_PER_DOC) + "\n[content truncated for processing]"
+          : doc.content;
+      totalChars += truncated.length;
+      return { ...doc, content: truncated };
+    }
+    // PDF: base64 is ~4/3× the binary size — approximate the char budget.
+    totalChars += Math.ceil(doc.content.length * 0.75);
+    return doc;
+  });
+
+  if (totalChars > MAX_TOTAL_CHARS) {
+    return res.status(413).json({
+      error: "Combined document content is too large. Try uploading fewer files or use smaller documents.",
+      errorCode: "TOO_LARGE",
+    });
   }
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -17,7 +46,7 @@ export default async function handler(req, res) {
       type: "text",
       text: `Analyze the following documents and extract information relevant to writing a Product Requirements Document (PRD).
 
-Extract each of the fields below. Be specific and grounded in the document content — use direct paraphrases or quotes where helpful. If a field cannot be determined from the documents, return an empty string for that field.
+Extract each of the fields below. Be specific and grounded in the document content. If a field cannot be determined, return an empty string.
 
 Fields to extract:
 - problemStatement: The core problem, pain point, or opportunity being addressed
@@ -31,7 +60,7 @@ Return ONLY a valid JSON object with exactly these six keys. No markdown, no exp
     },
   ];
 
-  for (const doc of documents) {
+  for (const doc of processedDocs) {
     if (doc.type === "pdf") {
       content.push({
         type: "document",
@@ -48,18 +77,25 @@ Return ONLY a valid JSON object with exactly these six keys. No markdown, no exp
   }
 
   try {
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 2048,
-      messages: [{ role: "user", content }],
-    });
+    const message = await client.messages.create(
+      {
+        model: "claude-sonnet-4-6",
+        max_tokens: 1024, // extraction output is short JSON — 1024 is plenty
+        messages: [{ role: "user", content }],
+      },
+      { timeout: 55_000 } // leave a buffer inside maxDuration
+    );
 
     const raw = message.content[0].text.trim();
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("No JSON in response");
+    if (!jsonMatch) {
+      return res.status(500).json({
+        error: "Claude returned an unexpected format. Please try again.",
+        errorCode: "PARSE_ERROR",
+      });
+    }
 
     const extracted = JSON.parse(jsonMatch[0]);
-
     const EXPECTED_KEYS = ["problemStatement", "targetUsers", "goals", "successMetrics", "inScope", "outOfScope"];
     const safe = {};
     for (const key of EXPECTED_KEYS) {
@@ -68,7 +104,30 @@ Return ONLY a valid JSON object with exactly these six keys. No markdown, no exp
 
     return res.status(200).json({ extracted: safe });
   } catch (err) {
-    console.error("Extraction error:", err);
-    return res.status(500).json({ error: "Failed to extract information from documents. Please try again." });
+    console.error("Extraction error:", err.constructor?.name, err.message);
+
+    const isTimeout =
+      err.constructor?.name === "APIConnectionTimeoutError" ||
+      err.code === "ETIMEDOUT" ||
+      err.message?.toLowerCase().includes("timeout");
+
+    if (isTimeout) {
+      return res.status(504).json({
+        error: "Analysis timed out. Try uploading fewer or smaller files. Vercel Hobby plan has a 10-second function limit — larger documents may require a Pro plan.",
+        errorCode: "TIMEOUT",
+      });
+    }
+
+    if (err instanceof SyntaxError) {
+      return res.status(500).json({
+        error: "Failed to parse Claude's response. Please try again.",
+        errorCode: "PARSE_ERROR",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Failed to extract information from your documents. Please try again.",
+      errorCode: "API_ERROR",
+    });
   }
 }

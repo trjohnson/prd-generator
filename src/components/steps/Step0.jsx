@@ -3,6 +3,9 @@ import { useState, useRef, useCallback } from 'react'
 const ACCEPTED_EXTENSIONS = ['.txt', '.pdf', '.docx', '.xlsx', '.csv']
 const MAX_FILE_SIZE_MB = 3
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024
+const MAX_CHARS_PER_DOC = 24_000
+const MAX_BODY_BYTES = 4_000_000 // stay under Vercel's 4.5 MB request body limit
+const FETCH_TIMEOUT_MS = 25_000
 const MAX_FILES = 5
 
 const FIELD_LABELS = {
@@ -123,21 +126,49 @@ export default function Step0({ onNext, onExtract }) {
     setError(null)
     setExtractedFields(null)
 
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+
     try {
+      // Extract content from each file
       const documents = await Promise.all(
         files.map(async f => {
           const { type, content } = await extractFileContent(f)
-          return { name: f.name, type, content }
+          // Truncate long text documents before sending
+          const trimmed =
+            type === 'text' && content.length > MAX_CHARS_PER_DOC
+              ? content.slice(0, MAX_CHARS_PER_DOC) + '\n[content truncated]'
+              : content
+          return { name: f.name, type, content: trimmed }
         })
       )
+
+      // Estimate encoded body size and reject before wasting a round-trip
+      const body = JSON.stringify({ documents })
+      if (body.length > MAX_BODY_BYTES) {
+        throw new Error('Combined file content is too large to process. Try uploading fewer files or use smaller documents.')
+      }
 
       const res = await fetch('/api/extract-from-files', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ documents }),
+        body,
+        signal: controller.signal,
       })
+
+      clearTimeout(timeoutId)
+
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error || 'Extraction failed')
+
+      if (res.status === 413) {
+        throw new Error(json.error || 'Files are too large. Try uploading fewer or smaller documents.')
+      }
+      if (res.status === 504) {
+        throw new Error(json.error || 'Analysis timed out. Try with fewer or smaller files.')
+      }
+      if (!res.ok) {
+        throw new Error(json.error || 'Extraction failed. Please try again.')
+      }
 
       const populated = Object.entries(json.extracted)
         .filter(([, v]) => v.trim().length > 0)
@@ -146,7 +177,12 @@ export default function Step0({ onNext, onExtract }) {
       setExtractedFields(populated)
       onExtract(json.extracted)
     } catch (err) {
-      setError(err.message)
+      clearTimeout(timeoutId)
+      if (err.name === 'AbortError') {
+        setError('Analysis is taking too long. Try uploading fewer or smaller files. Large documents may exceed the server time limit.')
+      } else {
+        setError(err.message)
+      }
     } finally {
       setAnalyzing(false)
     }
