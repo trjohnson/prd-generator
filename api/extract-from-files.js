@@ -68,10 +68,16 @@ Return ONLY a valid JSON object with exactly these six keys. No markdown, no exp
         title: doc.name,
       });
     } else {
+      // Document blocks with source.type "text" are not reliably supported —
+      // embed extracted text directly as a labelled text block instead.
+      const sanitized = doc.content
+        .replace(/\0/g, "")                            // null bytes from DOCX parsing
+        .replace(/[\x01-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "") // stray control chars
+        .trim();
+      if (sanitized.length === 0) continue;            // skip empty documents
       content.push({
-        type: "document",
-        source: { type: "text", data: doc.content },
-        title: doc.name,
+        type: "text",
+        text: `--- ${doc.name} ---\n${sanitized}`,
       });
     }
   }
@@ -104,7 +110,7 @@ Return ONLY a valid JSON object with exactly these six keys. No markdown, no exp
 
     return res.status(200).json({ extracted: safe });
   } catch (err) {
-    console.error("Extraction error:", err.constructor?.name, err.message);
+    console.error("Extraction error:", err.constructor?.name, err.status, err.message, JSON.stringify(err.error ?? null));
 
     const name = err.constructor?.name ?? "";
 
